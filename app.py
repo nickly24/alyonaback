@@ -6,8 +6,8 @@ from pymongo import MongoClient
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 CORS(app, resources={r"/*": {"origins": "*"}})
-# Используем gevent для лучшей совместимости с gunicorn
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+# Используем threading режим для работы с gunicorn (лучше всего работает)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # MongoDB connection
 MONGO_URI = "mongodb://gen_user:I_OBNu~9oHF0(m@81.200.148.71:27017/auth_db?authSource=admin&directConnection=true"

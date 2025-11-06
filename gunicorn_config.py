@@ -1,16 +1,14 @@
 """
-Конфигурация gunicorn для Flask-SocketIO с gevent
+Конфигурация gunicorn для Flask-SocketIO с threading
 """
 import multiprocessing
 
 # Количество worker процессов
-workers = 1  # Flask-SocketIO требует 1 worker для правильной работы комнат
+# Для SocketIO комнат нужно использовать 1 worker (комнаты хранятся в памяти)
+workers = 1
 
-# Worker класс для gevent (лучше работает с gunicorn)
-worker_class = 'gevent'
-
-# Количество одновременных соединений на worker
-worker_connections = 1000
+# Worker класс для threading (лучше всего работает с Flask-SocketIO в threading режиме)
+worker_class = 'sync'
 
 # Таймауты
 timeout = 60
@@ -26,4 +24,8 @@ loglevel = 'info'
 
 # Перезагрузка при изменении кода (только для разработки)
 reload = False
+
+# Threads для каждого worker (threading режим использует threads)
+# Больше threads = больше одновременных соединений
+threads = 4
 

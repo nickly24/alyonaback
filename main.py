@@ -1,11 +1,11 @@
 """
 Точка входа для gunicorn на Timeweb
-Flask-SocketIO с gevent работает лучше с gunicorn
+Flask-SocketIO с threading режимом работает стабильно с gunicorn sync worker
 """
 from app import app, socketio
 
-# Для gunicorn с gevent worker нужно экспортировать app
-# Flask-SocketIO будет работать через gevent worker класс
-# В gunicorn_config.py указан worker_class = 'gevent'
+# Для gunicorn с sync worker нужно экспортировать app
+# Flask-SocketIO работает в threading режиме, который совместим с sync worker
+# В gunicorn_config.py указан worker_class = 'sync' с threads
 application = app
 
