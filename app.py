@@ -25,6 +25,7 @@ ALLOWED_USERS = ['alyona', 'kolia']
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint для Timeweb"""
+    app.logger.info('Health check requested')
     return jsonify({
         'status': 'ok',
         'message': 'Alyona Time API is running'
@@ -64,11 +65,13 @@ def get_user(username):
 @socketio.on('connect')
 def handle_connect():
     """Обработка подключения"""
+    app.logger.info(f'Client connected: {request.sid}')
     print(f'Client connected: {request.sid}')
 
 @socketio.on('disconnect')
 def handle_disconnect():
     """Обработка отключения"""
+    app.logger.info(f'Client disconnected: {request.sid}')
     print(f'Client disconnected: {request.sid}')
     # Удаляем пользователя из активных
     username = None
@@ -105,6 +108,7 @@ def handle_disconnect():
 def handle_user_login(data):
     """Пользователь входит в систему"""
     username = data.get('username')
+    app.logger.info(f'user_login received: {username}')
     if username not in ALLOWED_USERS:
         emit('error', {'message': 'Invalid username'})
         return
@@ -127,6 +131,7 @@ def handle_user_login(data):
 def handle_join_call(data):
     """Пользователь хочет присоединиться к звонку"""
     username = data.get('username')
+    app.logger.info(f'join_call from {username}')
     if username not in ALLOWED_USERS:
         emit('error', {'message': 'Invalid username'})
         return
@@ -150,11 +155,13 @@ def handle_join_call(data):
             'room_id': room_id,
             'is_initiator': True
         })
+        app.logger.info(f'{username} waiting for {other_user}')
     else:
         # Второй пользователь присоединился
         call_rooms[room_id]['users'].append(username)
         call_rooms[room_id]['status'] = 'active'
         join_room(room_id)
+        app.logger.info(f'{username} joined active call room_id={room_id}')
         
         # Уведомляем обоих пользователей, что звонок начался
         first_user = call_rooms[room_id]['first_user']
@@ -165,6 +172,7 @@ def handle_join_call(data):
                 'users': call_rooms[room_id]['users'],
                 'is_initiator': (user == first_user)
             }, room=active_users[user])
+            app.logger.info(f'call_started sent to {user}, initiator={user == first_user}')
     
     db.users.update_one(
         {'username': username},
@@ -175,6 +183,7 @@ def handle_join_call(data):
 def handle_leave_call(data):
     """Пользователь покидает звонок"""
     username = data.get('username')
+    app.logger.info(f'leave_call from {username}')
     room_id = data.get('room_id', 'call_room')
     
     leave_room(room_id)
@@ -206,6 +215,7 @@ def handle_leave_call(data):
 def handle_webrtc_offer(data):
     """Передача WebRTC offer"""
     username = data.get('username')
+    app.logger.info(f'webrtc_offer from {username}')
     offer = data.get('offer')
     room_id = data.get('room_id', 'call_room')
     
@@ -219,6 +229,7 @@ def handle_webrtc_offer(data):
 def handle_webrtc_answer(data):
     """Передача WebRTC answer"""
     username = data.get('username')
+    app.logger.info(f'webrtc_answer from {username}')
     answer = data.get('answer')
     room_id = data.get('room_id', 'call_room')
     
@@ -232,6 +243,7 @@ def handle_webrtc_answer(data):
 def handle_webrtc_ice_candidate(data):
     """Передача ICE candidate"""
     username = data.get('username')
+    app.logger.info(f'webrtc_ice_candidate from {username}')
     candidate = data.get('candidate')
     room_id = data.get('room_id', 'call_room')
     
@@ -247,6 +259,7 @@ def check_pending_call(username):
     if room_id in call_rooms and call_rooms[room_id]['status'] == 'waiting':
         other_user = call_rooms[room_id]['users'][0]
         if other_user != username:
+            app.logger.info(f'pending_call for {username} from {other_user}')
             # Есть ожидающий звонок от другого пользователя
             socketio.emit('pending_call', {
                 'from': other_user
