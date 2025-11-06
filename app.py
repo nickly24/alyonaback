@@ -23,6 +23,15 @@ call_rooms = {}
 # Разрешенные пользователи
 ALLOWED_USERS = ['alyona', 'kolia']
 
+@app.route('/', methods=['GET'])
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint для Timeweb"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'Alyona Time API is running'
+    }), 200
+
 @app.route('/api/users', methods=['GET'])
 def get_users():
     """Получить список пользователей"""
@@ -249,4 +258,8 @@ if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 80))
     socketio.run(app, debug=True, host='0.0.0.0', port=port)
+else:
+    # Для production с gunicorn
+    # Flask-SocketIO должен работать через eventlet worker
+    pass
 
