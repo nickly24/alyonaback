@@ -1,13 +1,13 @@
 """
-Конфигурация gunicorn для Flask-SocketIO с eventlet
+Конфигурация gunicorn для Flask-SocketIO с gevent
 """
 import multiprocessing
 
 # Количество worker процессов
 workers = 1  # Flask-SocketIO требует 1 worker для правильной работы комнат
 
-# Worker класс для eventlet
-worker_class = 'eventlet'
+# Worker класс для gevent (лучше работает с gunicorn)
+worker_class = 'gevent'
 
 # Количество одновременных соединений на worker
 worker_connections = 1000

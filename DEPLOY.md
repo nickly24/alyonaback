@@ -9,7 +9,7 @@ pip install -r requirements.txt
 
 ### Команда запуска:
 ```bash
-gunicorn main:application --bind 0.0.0.0:8000 --timeout 60 --worker-class eventlet --workers 1
+gunicorn main:application --bind 0.0.0.0:8000 --timeout 60 --worker-class gevent --workers 1 --worker-connections 1000
 ```
 
 Или используйте конфигурационный файл:
@@ -19,10 +19,11 @@ gunicorn main:application -c gunicorn_config.py
 
 ## Важные моменты:
 
-1. **Worker класс**: Обязательно используйте `--worker-class eventlet` для Flask-SocketIO
+1. **Worker класс**: Обязательно используйте `--worker-class gevent` для Flask-SocketIO (gevent лучше работает с gunicorn)
 2. **Количество workers**: Используйте `--workers 1` (один worker) для правильной работы SocketIO комнат
-3. **Порт**: Timeweb использует порт 8000 по умолчанию
-4. **Таймаут**: Установлен 60 секунд для WebSocket соединений
+3. **Worker connections**: `--worker-connections 1000` для поддержки множества WebSocket соединений
+4. **Порт**: Timeweb использует порт 8000 по умолчанию
+5. **Таймаут**: Установлен 60 секунд для WebSocket соединений
 
 ## Переменные окружения:
 

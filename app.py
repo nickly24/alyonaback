@@ -2,14 +2,12 @@ from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from pymongo import MongoClient
-import eventlet
-
-eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 CORS(app, resources={r"/*": {"origins": "*"}})
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+# Используем gevent для лучшей совместимости с gunicorn
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
 
 # MongoDB connection
 MONGO_URI = "mongodb://gen_user:I_OBNu~9oHF0(m@81.200.148.71:27017/auth_db?authSource=admin&directConnection=true"
@@ -258,8 +256,4 @@ if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 80))
     socketio.run(app, debug=True, host='0.0.0.0', port=port)
-else:
-    # Для production с gunicorn
-    # Flask-SocketIO должен работать через eventlet worker
-    pass
 
